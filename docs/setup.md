@@ -13,7 +13,7 @@ In your repo settings → Secrets and variables → Actions:
 ### 3. Configure
 Edit `sync-config.yaml`:
 ```yaml
-source_repository: my-org/source-repo  # reference only
+# source_repository: auto-detected (omit for auto-detection)
 secrets:
   - API_TOKEN
   - DATABASE_URL
@@ -21,6 +21,10 @@ targets:
   - repository: my-org/target-repo-1
   - repository: my-org/target-repo-2
 ```
+
+**Note**: `source_repository` is optional. It auto-detects from:
+- GitHub Actions: `GITHUB_REPOSITORY` environment variable
+- Local: git remote URL
 
 ### 4. Run
 Click the 🚀 badge in the README, or it runs daily at midnight UTC
@@ -96,8 +100,8 @@ Then add these repository secrets:
 ## Configuring sync-config.yaml
 
 ```yaml
-# Source repository (for reference - secrets NOT read from here)
-source_repository: my-org/source-repo
+# Source repository (optional - auto-detected if omitted)
+# source_repository: my-org/source-repo
 
 # Secret names to sync (values come from GitHub Actions secrets)
 secrets:
@@ -113,7 +117,10 @@ targets:
 
 ### Important Notes
 
-- `source_repository` is **reference only** - secrets are read from GitHub Actions env vars
+- `source_repository` is **optional** and **for reference only** - secrets are read from GitHub Actions env vars
+  - Auto-detects from `GITHUB_REPOSITORY` in GitHub Actions
+  - Auto-detects from git remote URL when running locally
+  - Explicitly set it if you want to override auto-detection
 - All secrets in the list are synced to **all** target repositories
 - Secret names must match exactly (case-sensitive)
 - Target repos must exist and your PAT must have write access

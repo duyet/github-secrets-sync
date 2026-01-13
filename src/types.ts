@@ -10,8 +10,8 @@ export interface SyncTarget {
  * Sync configuration from sync-config.yaml
  */
 export interface SyncConfig {
-  /** Source repository to read secrets from */
-  source_repository: string;
+  /** Source repository (auto-detected if not specified) */
+  source_repository?: string;
   /** List of secret names to sync */
   secrets: string[];
   /** Target repositories to sync secrets to */

@@ -1,6 +1,40 @@
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { SyncConfig } from "./types.js";
+
+/**
+ * Detect current repository from git or GitHub Actions environment
+ */
+export function detectRepository(): string {
+  // In GitHub Actions, use GITHUB_REPOSITORY
+  if (process.env.GITHUB_REPOSITORY) {
+    return process.env.GITHUB_REPOSITORY;
+  }
+
+  // Fallback: detect from git remote
+  try {
+    const remoteUrl = execFileSync("git", ["remote", "get-url", "origin"], {
+      encoding: "utf-8",
+      stdio: "pipe",
+    }).trim();
+
+    // Parse various git URL formats:
+    // https://github.com/owner/repo.git
+    // git@github.com:owner/repo.git
+    // git://github.com/owner/repo.git
+    const match = remoteUrl.match(/(?:\/|:)([\w-]+\/[\w-]+)(?:\.git)?$/);
+    if (match) {
+      return match[1];
+    }
+  } catch {
+    // git command failed, continue to error
+  }
+
+  throw new Error(
+    "Could not detect repository. Set source_repository in sync-config.yaml or run in GitHub Actions."
+  );
+}
 
 /**
  * Load and parse sync-config.yaml
@@ -99,8 +133,9 @@ function parseYaml(content: string): SyncConfig {
  * Validate the configuration
  */
 function validateConfig(config: SyncConfig): SyncConfig {
+  // Auto-detect source_repository if not specified
   if (!config.source_repository) {
-    throw new Error("Missing required field: source_repository");
+    config.source_repository = detectRepository();
   }
 
   if (!config.secrets || config.secrets.length === 0) {

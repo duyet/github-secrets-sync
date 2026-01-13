@@ -16,7 +16,8 @@ Sync secrets across GitHub repositories safely. Whitelist-based, scheduled or ma
                              ▼
                     ┌─────────────────┐
                     │   CONFIG        │
-                    │ sync-config.yaml│  Whitelist of secrets + targets
+                    │ sync-config.yaml│  Whitelist: secrets + targets
+                    │                 │  source_repo: auto-detected
                     └────────┬────────┘
                              │
                              ▼
@@ -45,6 +46,7 @@ Sync secrets across GitHub repositories safely. Whitelist-based, scheduled or ma
 **Key Points:**
 - 🔒 **Values never logged** - only secret names appear in status
 - ✅ **Whitelist-only** - only secrets you explicitly list get synced
+- 🤖 **Auto-detects source** - from GITHUB_REPOSITORY or git remote
 - 📅 **Auto-runs daily** - or trigger manually anytime
 
 ## Documentation
