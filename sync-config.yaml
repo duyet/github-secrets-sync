@@ -1,0 +1,24 @@
+# GitHub Secrets Sync Configuration
+#
+# This configuration defines which secrets to sync from which source repository
+# to which target repositories.
+#
+# IMPORTANT: This uses a whitelist approach - only secrets listed here will be synced.
+# Secret values must be available as environment variables when the workflow runs.
+
+# Source repository (format: owner/repo)
+# Secrets are read from environment variables, not from this repository
+source_repository: my-org/source-repo
+
+# List of secret names to sync
+# Each secret name should be available as an environment variable
+secrets:
+  - API_TOKEN
+  - DATABASE_URL
+  - APP_SECRET_KEY
+
+# Target repositories to sync secrets to
+# All listed secrets will be synced to all target repositories
+targets:
+  - repository: my-org/target-repo-1
+  - repository: my-org/target-repo-2

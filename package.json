@@ -1,0 +1,19 @@
+{
+  "name": "github-secrets-sync",
+  "version": "1.0.0",
+  "description": "Secure GitHub secret synchronization using Bun/TypeScript",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "dry-run": "bun run src/index.ts --dry-run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
