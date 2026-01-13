@@ -1,6 +1,35 @@
 # Setup Guide
 
-## Creating a Personal Access Token (PAT)
+## Quick Setup
+
+### 1. Create PAT
+Go to https://github.com/settings/tokens/new → generate token with `repo` scope → copy it
+
+### 2. Add to GitHub Secrets
+In your repo settings → Secrets and variables → Actions:
+- `GH_SYNC_PAT` = your PAT
+- Add each secret you want to sync (e.g., `API_TOKEN`, `DATABASE_URL`)
+
+### 3. Configure
+Edit `sync-config.yaml`:
+```yaml
+source_repository: my-org/source-repo  # reference only
+secrets:
+  - API_TOKEN
+  - DATABASE_URL
+targets:
+  - repository: my-org/target-repo-1
+  - repository: my-org/target-repo-2
+```
+
+### 4. Run
+Click the 🚀 badge in the README, or it runs daily at midnight UTC
+
+---
+
+## Detailed Instructions
+
+### Creating a Personal Access Token (PAT)
 
 ### Step-by-step
 

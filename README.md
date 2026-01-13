@@ -4,72 +4,39 @@
 
 Sync secrets across GitHub repositories safely. Whitelist-based, scheduled or manual.
 
-## Quick Setup
+## How It Works
 
-**[→ Detailed Setup Guide](docs/setup.md)**
-
-### 1. Create PAT
-Go to https://github.com/settings/tokens/new → generate token with `repo` scope → copy it
-
-### 2. Add to GitHub Secrets
-In your repo settings → Secrets and variables → Actions:
-- `GH_SYNC_PAT` = your PAT
-- Add each secret you want to sync (e.g., `API_TOKEN`, `DATABASE_URL`)
-
-### 3. Configure
-Edit `sync-config.yaml`:
-```yaml
-source_repository: my-org/source-repo  # reference only
-secrets:
-  - API_TOKEN
-  - DATABASE_URL
-targets:
-  - repository: my-org/target-repo-1
-  - repository: my-org/target-repo-2
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  1. Trigger: Schedule (daily) or Manual (click 🚀 badge)        │
+│                          ↓                                      │
+│  2. Load sync-config.yaml (whitelist of secrets + targets)      │
+│                          ↓                                      │
+│  3. Read secret values from GitHub Actions env vars             │
+│                          ↓                                      │
+│  4. For each secret → For each target → gh secret set          │
+│                          ↓                                      │
+│  5. Update README with sync status (names only, no values)     │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-### 4. Run
-Click the 🚀 badge above, or it runs daily at midnight UTC
+## Documentation
 
-## Usage
+| Topic | Link |
+|-------|------|
+| **Setup Guide** | [docs/setup.md](docs/setup.md) - PAT creation, configuration |
+| **Security Model** | [docs/security.md](docs/security.md) - How secrets stay safe |
+| **Troubleshooting** | [docs/troubleshooting.md](docs/troubleshooting.md) - Common issues |
+
+## Quick Reference
 
 ```bash
-# Local testing
+# Local testing (dry run)
 bun run dry-run
 
 # With custom config
 bun run src/index.ts --config=path/to/config.yaml --verbose
 ```
-
-## Security
-
-**[→ Security Model Details](docs/security.md)**
-
-| What | Where | Safe? |
-|------|-------|-------|
-| Secret names | `sync-config.yaml` | ✅ Public |
-| Secret values | GitHub Actions Secrets only | ✅ Encrypted |
-| Sync logs | GitHub Actions | ✅ No values logged |
-
-## How It Works
-
-```
-Trigger (schedule/manual)
-  → Load sync-config.yaml whitelist
-  → Read secret values from GitHub Actions env
-  → For each secret → For each target → gh secret set
-  → Update README with sync status (names only)
-```
-
-## Troubleshooting
-
-**[→ Full Troubleshooting Guide](docs/troubleshooting.md)**
-
-| Error | Quick Fix |
-|-------|-----------|
-| `GH_SYNC_PAT required` | Add PAT to repo secrets |
-| `Secret value not found` | Add secret to repo secrets (name must match) |
-| Auth failed | Verify PAT has `repo` scope and hasn't expired |
 
 ## Sync Status
 
