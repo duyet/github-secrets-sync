@@ -1,5 +1,8 @@
 # GitHub Secrets Sync
 
+[![Run Sync](https://img.shields.io/badge/🚀-Run_Sync-blue?logo=github)](https://github.com/duyet/github-secrets-sync/actions/workflows/sync-secrets.yml)
+[![Schedule](https://img.shields.io/badge/📅-Daily%20Midnight%20UTC-green)](https://github.com/duyet/github-secrets-sync/actions/workflows/sync-secrets.yml)
+
 A secure, automated GitHub secret synchronization solution using Bun/TypeScript. Sync secrets across multiple repositories using a whitelist-based approach with both scheduled and manual triggers.
 
 ## Features
@@ -82,9 +85,16 @@ For each secret listed in `sync-config.yaml`, add it as a repository secret in y
 
 ### Manual Trigger
 
-Go to **Actions → Sync Secrets → Run workflow** and:
-- Leave "Dry run" unchecked to actually sync
-- Check "Dry run" to test without making changes
+**Click the 🚀 Run Sync badge at the top** of this README, or:
+
+1. Go to **Actions** → **Sync Secrets** workflow
+2. Click **Run workflow**
+3. Choose:
+   - ✅ **Dry run** = test without making changes
+   - ❌ **Dry run** unchecked = actually sync secrets
+4. Click **Run workflow**
+
+> **Tip**: The workflow also runs automatically every day at midnight UTC.
 
 ### Local Testing
 
