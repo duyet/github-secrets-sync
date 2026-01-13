@@ -1,0 +1,90 @@
+# Setup Guide
+
+## Creating a Personal Access Token (PAT)
+
+### Step-by-step
+
+1. **Navigate to token settings**
+   - Go to **Settings** (top right) → **Developer settings**
+   - Or directly: https://github.com/settings/tokens/new
+
+2. **Generate new token**
+   - Click **Generate new token** → **Generate new token (classic)**
+
+3. **Configure**
+   - **Name**: "GitHub Secrets Sync PAT" (or any descriptive name)
+   - **Expiration**: 90 days or 1 year
+   - **Scopes**: Check only `repo` (full control of private repositories)
+
+4. **Generate and copy**
+   - Click **Generate token** at bottom
+   - **Copy immediately** - you won't see it again!
+
+### Why PAT is needed
+
+GitHub's default `GITHUB_TOKEN` in Actions cannot access secrets in other repositories. A PAT with `repo` scope can:
+
+- List secrets in any repository you have access to
+- Create/update secrets in target repositories
+- Authenticate the `gh` CLI for secret operations
+
+### Security Notes
+
+- ✅ Store PAT in GitHub Actions Secrets (encrypted at rest)
+- ❌ Never commit PAT to git
+- ❌ Never share in chats, emails, or issue trackers
+- 🔁 Revoke immediately if accidentally exposed
+
+## Adding Secrets to GitHub
+
+### Repository Secrets Location
+
+```
+Your Repo → Settings → Secrets and variables → Actions
+```
+
+### Required Secrets
+
+| Secret | Description |
+|--------|-------------|
+| `GH_SYNC_PAT` | Personal Access Token for authentication |
+
+### Secret Values to Sync
+
+For each secret in your `sync-config.yaml` `secrets:` list, add it as a repository secret with the exact same name.
+
+Example: If `sync-config.yaml` has:
+```yaml
+secrets:
+  - API_TOKEN
+  - DATABASE_URL
+```
+
+Then add these repository secrets:
+- `API_TOKEN` = your actual API token value
+- `DATABASE_URL` = your actual database connection string
+
+## Configuring sync-config.yaml
+
+```yaml
+# Source repository (for reference - secrets NOT read from here)
+source_repository: my-org/source-repo
+
+# Secret names to sync (values come from GitHub Actions secrets)
+secrets:
+  - API_TOKEN
+  - DATABASE_URL
+  - APP_SECRET_KEY
+
+# Target repositories (must be repos your PAT can write to)
+targets:
+  - repository: my-org/target-repo-1
+  - repository: my-org/target-repo-2
+```
+
+### Important Notes
+
+- `source_repository` is **reference only** - secrets are read from GitHub Actions env vars
+- All secrets in the list are synced to **all** target repositories
+- Secret names must match exactly (case-sensitive)
+- Target repos must exist and your PAT must have write access
