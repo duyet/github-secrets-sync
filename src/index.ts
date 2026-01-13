@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { CliOptions, SyncResult, SecretSyncResult } from "./types.js";
 import { loadConfig } from "./config.js";
-import { configureAuth, syncSecret, getSecretValue } from "./github.js";
+import { configureAuth, syncSecret, getSecretValue, syncVariable, getVarValue } from "./github.js";
 
 /**
  * Parse CLI arguments
@@ -87,6 +87,7 @@ async function runSync(options: CliOptions): Promise<SyncResult> {
 
   log(`Source repository: ${config.source_repository}`, options.verbose);
   log(`Secrets to sync: ${config.secrets.join(", ")}`, options.verbose);
+  log(`Vars to sync: ${config.vars?.join(", ") || "none"}`, options.verbose);
   log(`Targets: ${config.targets.map((t) => t.repository).join(", ")}`, options.verbose);
 
   const results: SecretSyncResult[] = [];
@@ -96,9 +97,13 @@ async function runSync(options: CliOptions): Promise<SyncResult> {
   // For each target, use its own secrets list if specified, otherwise use global list
   for (const target of config.targets) {
     const secretsForTarget = target.secrets || config.secrets;
+    const varsForTarget = target.vars || config.vars || [];
+
     log(`Target: ${target.repository}`, options.verbose);
     log(`  Secrets: ${secretsForTarget.join(", ")}`, options.verbose);
+    log(`  Vars: ${varsForTarget.length > 0 ? varsForTarget.join(", ") : "none"}`, options.verbose);
 
+    // Sync secrets
     for (const secretName of secretsForTarget) {
       log(`  Processing secret: ${secretName}`, options.verbose);
 
@@ -107,6 +112,24 @@ async function runSync(options: CliOptions): Promise<SyncResult> {
       log(`    Retrieved secret value`, options.verbose);
 
       const result = syncSecret(secretName, target.repository, secretValue, options.dryRun);
+      results.push(result);
+
+      if (result.success) {
+        log(`    ✅ Success`, options.verbose);
+      } else {
+        log(`    ❌ Failed: ${result.error}`, options.verbose);
+      }
+    }
+
+    // Sync vars
+    for (const varName of varsForTarget) {
+      log(`  Processing var: ${varName}`, options.verbose);
+
+      // Get var value from environment variable
+      const varValue = getVarValue(varName);
+      log(`    Retrieved var value`, options.verbose);
+
+      const result = syncVariable(varName, target.repository, varValue, options.dryRun);
       results.push(result);
 
       if (result.success) {
@@ -152,14 +175,16 @@ function generateSyncStatusTable(result: SyncResult): string {
       const detail = result.details.find(
         (d) => d.secret === secret && d.target === target
       );
+      const type = detail?.type || "secret";
+      const typeIcon = type === "secret" ? "🔒" : "📝";
       const status = detail?.success ? "✅ Synced" : `❌ ${detail?.error || "Failed"}`;
-      rows.push(`| ${secret} | ${target} | ${now} | ${status} |`);
+      rows.push(`| ${secret} | ${target} | ${typeIcon} ${type} | ${now} | ${status} |`);
     }
   }
 
   return `<!-- SYNC_STATUS_START -->
-| Secret | Target Repo | Last Sync | Status |
-|--------|-------------|-----------|--------|
+| Secret | Target Repo | Type | Last Sync | Status |
+|--------|-------------|------|-----------|--------|
 ${rows.join("\n")}
 <!-- SYNC_STATUS_END -->
 

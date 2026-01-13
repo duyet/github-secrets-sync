@@ -7,7 +7,12 @@
   "scripts": {
     "start": "bun run src/index.ts",
     "dry-run": "bun run src/index.ts --dry-run",
-    "typecheck": "tsc --noEmit"
+    "dry-run-verbose": "bun run src/index.ts --dry-run --verbose",
+    "typecheck": "tsc --noEmit",
+    "push-env": "bun run scripts/push-env.ts",
+    "sync": "bun run scripts/sync.ts",
+    "sync:dry": "bun run scripts/sync.ts --dry-run",
+    "sync:verbose": "bun run scripts/sync.ts --verbose"
   },
   "devDependencies": {
     "@types/bun": "^1.3.5",

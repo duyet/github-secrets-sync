@@ -6,6 +6,8 @@ export interface SyncTarget {
   repository: string;
   /** Optional: Override which secrets to sync to this target (defaults to all) */
   secrets?: string[];
+  /** Optional: Override which vars to sync to this target (defaults to all) */
+  vars?: string[];
 }
 
 /**
@@ -14,17 +16,19 @@ export interface SyncTarget {
 export interface SyncConfig {
   /** Source repository (auto-detected if not specified) */
   source_repository?: string;
-  /** List of secret names to sync */
+  /** List of secret names to sync (sensitive, encrypted) */
   secrets: string[];
-  /** Target repositories to sync secrets to */
+  /** List of var names to sync (non-sensitive, plain text) */
+  vars?: string[];
+  /** Target repositories to sync secrets/vars to */
   targets: SyncTarget[];
 }
 
 /**
- * Result of syncing a single secret to a target
+ * Result of syncing a single secret/var to a target
  */
 export interface SecretSyncResult {
-  /** Secret name */
+  /** Secret or var name */
   secret: string;
   /** Target repository */
   target: string;
@@ -32,6 +36,8 @@ export interface SecretSyncResult {
   success: boolean;
   /** Error message if failed */
   error?: string;
+  /** Type: "secret" or "var" */
+  type?: "secret" | "var";
 }
 
 /**

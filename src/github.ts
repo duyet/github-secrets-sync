@@ -39,6 +39,22 @@ export function getSecretValue(secretName: string): string {
 }
 
 /**
+ * Get var value from environment variables
+ * Vars are non-sensitive and can be plain text
+ */
+export function getVarValue(varName: string): string {
+  const envValue = process.env[varName];
+  if (envValue) {
+    return envValue;
+  }
+
+  throw new Error(
+    `Var value not found for ${varName}. ` +
+      "Vars must be available as environment variables."
+  );
+}
+
+/**
  * List secrets in a repository
  */
 export function listSecrets(repo: string): string[] {
@@ -87,6 +103,7 @@ export function syncSecret(
     secret: secretName,
     target: targetRepo,
     success: false,
+    type: "secret",
   };
 
   try {
@@ -96,6 +113,74 @@ export function syncSecret(
     }
 
     setSecret(targetRepo, secretName, secretValue);
+    result.success = true;
+  } catch (error) {
+    result.error = error instanceof Error ? error.message : String(error);
+    result.success = false;
+  }
+
+  return result;
+}
+
+/**
+ * List variables in a repository
+ */
+export function listVars(repo: string): string[] {
+  const output = gh(["variable", "list", "-R", repo, "--json", "name"], {
+    silent: true,
+  });
+  const vars = JSON.parse(output) as Array<{ name: string }>;
+  return vars.map((v) => v.name);
+}
+
+/**
+ * Set variable in target repository
+ */
+export function setVariable(
+  repo: string,
+  varName: string,
+  varValue: string
+): void {
+  gh(["variable", "set", varName, "-R", repo, "--body", varValue], {
+    silent: true,
+  });
+}
+
+/**
+ * Check if variable exists in repository
+ */
+export function variableExists(repo: string, varName: string): boolean {
+  try {
+    const vars = listVars(repo);
+    return vars.includes(varName);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Sync a single variable to a target repository
+ */
+export function syncVariable(
+  varName: string,
+  targetRepo: string,
+  varValue: string,
+  dryRun: boolean
+): SecretSyncResult {
+  const result: SecretSyncResult = {
+    secret: varName,
+    target: targetRepo,
+    success: false,
+    type: "var",
+  };
+
+  try {
+    if (dryRun) {
+      result.success = true;
+      return result;
+    }
+
+    setVariable(targetRepo, varName, varValue);
     result.success = true;
   } catch (error) {
     result.error = error instanceof Error ? error.message : String(error);

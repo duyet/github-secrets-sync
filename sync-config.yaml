@@ -1,84 +1,114 @@
-# GitHub Secrets Sync Configuration
+# GitHub Secrets & Vars Sync Configuration
 #
 # Auto-generated from local project analysis
 #
 # Scanned projects:
 # - ~/project/monorepo (duyet/monorepo)
 # - ~/project/clickhouse-monitor (duyet/clickhouse-monitoring)
+#
+# Definitions:
+# - secrets: Sensitive values (API keys, tokens, passwords) - encrypted, hidden
+# - vars: Non-sensitive values (URLs, config, IDs) - plain text, visible in UI
 
 # Source repository (auto-detected)
 # source_repository: duyet/github-secrets-sync
 
-# Global secrets that are shared across most projects
+# =============================================================================
+# Global Secrets (sensitive, encrypted)
+# =============================================================================
 secrets:
-  - GITHUB_TOKEN
+  - DUYETBOT_GITHUB_TOKEN
 
-# Target repositories
+# =============================================================================
+# Global Vars (non-sensitive, visible in UI)
+# =============================================================================
+vars:
+  - NODE_ENV
+  - ENVIRONMENT
+
+# =============================================================================
+# Target Repositories
+# =============================================================================
 targets:
+  # ---------------------------------------------------------------------------
   # MONOREPO (duyet/monorepo)
   # Main monorepo with multiple apps (insights, blog, data-sync, ai-percentage)
+  # ---------------------------------------------------------------------------
   - repository: duyet/monorepo
     secrets:
       # Authentication
-      - AUTH0_CLIENT_ID
       - AUTH0_CLIENT_SECRET
-      - AUTH0_SECRET
+      - AUTH_SECRET
 
-      # Analytics & Monitoring
+      # Analytics & Monitoring (API Keys)
       - AXIOM_TOKEN
       - POSTHOG_API_KEY
-      - POSTHOG_PROJECT_ID
       - SELINE_TOKEN
       - WAKATIME_API_KEY
 
-      # Database
+      # Database (Credentials)
+      - POSTGRES_PASSWORD
+
+      # ClickHouse (Credentials)
+      - CLICKHOUSE_PASSWORD
+
+      # Cloudflare (API Keys)
+      - CLOUDFLARE_API_KEY
+      - CLOUDFLARE_API_TOKEN
+      - CLOUDFLARE_ZONE_ID
+
+      # Redis (KV) (Credentials)
+      - KV_REST_API_TOKEN
+
+    vars:
+      # Authentication (Public Client IDs)
+      - AUTH0_CLIENT_ID
+
+      # Analytics & Monitoring (Project IDs)
+      - POSTHOG_PROJECT_ID
+
+      # Database (Connection Info)
       - POSTGRES_URL
       - POSTGRES_HOST
       - POSTGRES_DATABASE
       - POSTGRES_USER
-      - POSTGRES_PASSWORD
 
-      # ClickHouse
+      # ClickHouse (Connection Info)
       - CLICKHOUSE_HOST
       - CLICKHOUSE_PORT
       - CLICKHOUSE_DATABASE
       - CLICKHOUSE_USER
-      - CLICKHOUSE_PASSWORD
 
-      # Cloudflare
-      - CLOUDFLARE_API_KEY
-      - CLOUDFLARE_API_TOKEN
+      # Cloudflare (Config)
       - CLOUDFLARE_EMAIL
-      - CLOUDFLARE_ZONE_ID
 
-      # Redis (KV)
-      - KV_REST_API_TOKEN
-      - KV_REST_API_URL
-      - KV_URL
-
-      # GitHub
-      - GITHUB_TOKEN
-
+  # ---------------------------------------------------------------------------
   # CLICKHOUSE MONITOR (duyet/clickhouse-monitoring)
   # ClickHouse monitoring dashboard
+  # ---------------------------------------------------------------------------
   - repository: duyet/clickhouse-monitoring
     secrets:
-      # GitHub OAuth
-      - AUTH_GITHUB_ID
+      # GitHub OAuth (Secret)
       - AUTH_GITHUB_SECRET
       - AUTH_SECRET
 
-      # Database
+      # ClickHouse (Credentials)
+      - CLICKHOUSE_PASSWORD
+
+    vars:
+      # GitHub OAuth (Public Client ID)
+      - AUTH_GITHUB_ID
+
+      # Database (Connection Info)
       - DATABASE_URL
 
-      # ClickHouse
+      # ClickHouse (Connection Info)
       - CLICKHOUSE_HOST
       - CLICKHOUSE_USER
-      - CLICKHOUSE_PASSWORD
       - CLICKHOUSE_DEFAULT_CLUSTER
       - CLICKHOUSE_TZ
 
-      # Monitoring config
+      # Monitoring Config (Values)
       - CLICKHOUSE_MAX_EXECUTION_TIME
       - CLICKHOUSE_QUERY_STUCK_DETECTION_MAX_SECONDS
       - CLICKHOUSE_TABLE_MAX_PARTS_WARN
