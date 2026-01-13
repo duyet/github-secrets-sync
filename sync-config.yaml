@@ -1,5 +1,12 @@
 # GitHub Secrets & Vars Sync Configuration
 #
+# Auto-generated from local project analysis
+#
+# Scanned projects:
+# - ~/project/monorepo (duyet/monorepo)
+# - ~/project/clickhouse-monitor (duyet/clickhouse-monitoring)
+# - ~/project/duyetbot-agent (duyet/duyetbot-agent)
+#
 # Definitions:
 # - secrets: Sensitive values (API keys, tokens, passwords) - encrypted, hidden
 # - vars: Non-sensitive values (URLs, config, IDs) - plain text, visible in UI
@@ -107,3 +114,49 @@ targets:
       - CLICKHOUSE_MAX_EXECUTION_TIME
       - CLICKHOUSE_QUERY_STUCK_DETECTION_MAX_SECONDS
       - CLICKHOUSE_TABLE_MAX_PARTS_WARN
+
+  # ---------------------------------------------------------------------------
+  # DUYETBOT AGENT (duyet/duyetbot-agent)
+  # AI agent with GitHub integration, Telegram bot, MCP server
+  # ---------------------------------------------------------------------------
+  - repository: duyet/duyetbot-agent
+    secrets:
+      # AI Gateway
+      - AI_GATEWAY_API_KEY
+
+      # GitHub (Tokens & Secrets)
+      - GITHUB_TOKEN
+      - GITHUB_WEBHOOK_SECRET
+      - GITHUB_CLIENT_SECRET
+
+      # LLM Providers (already global, but listed for clarity)
+      # - OPENROUTER_API_KEY
+
+      # Prompt Evaluation
+      - PROMPTFOO_API_KEY
+
+      # Telegram
+      - TELEGRAM_BOT_TOKEN
+      - TELEGRAM_WEBHOOK_SECRET
+
+      # MCP Server
+      - MEMORY_MCP_API_KEY
+
+    vars:
+      # AI Gateway (Config)
+      - AI_GATEWAY_NAME
+
+      # GitHub (Public Client ID)
+      - GITHUB_CLIENT_ID
+
+      # LLM Providers (Model selection)
+      - MODEL
+
+      # Prompt Evaluation (Config)
+      - PROMPTFOO_CACHE_ENABLED
+
+      # Telegram (Webhook URL)
+      - TELEGRAM_WEBHOOK_URL
+
+      # MCP Server (URL)
+      - MEMORY_MCP_URL
