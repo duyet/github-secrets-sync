@@ -102,7 +102,7 @@ async function runSync(options: CliOptions): Promise<SyncResult> {
     for (const secretName of secretsForTarget) {
       log(`  Processing secret: ${secretName}`, options.verbose);
 
-      // Get secret value from environment
+      // Get secret value from environment variable
       const secretValue = getSecretValue(secretName);
       log(`    Retrieved secret value`, options.verbose);
 

@@ -46,6 +46,7 @@ Sync secrets across GitHub repositories safely. Whitelist-based, scheduled or ma
 **Key Points:**
 - 🔒 **Values never logged** - only secret names appear in status
 - ✅ **Whitelist-only** - only secrets you explicitly list get synced
+- 📁 **Local .env support** - read from local files for testing (`env_file: ~/project/repo/.env*`)
 - 🤖 **Auto-detects source** - from GITHUB_REPOSITORY or git remote
 - 📅 **Auto-runs daily** - or trigger manually anytime
 

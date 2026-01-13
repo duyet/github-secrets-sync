@@ -48,32 +48,36 @@ export function loadConfig(configPath: string = "sync-config.yaml"): SyncConfig 
 
 /**
  * Simple YAML parser for our config format
- * Handles:
- * - key: value
- * - key:
- *     - item1
- *     - item2
- *     - key: value  (object in array)
- *     - key: value  (object in array with nested fields)
  */
 function parseYaml(content: string): SyncConfig {
   const lines = content.split("\n");
   const config: Record<string, unknown> = {};
 
-  type StackItem = { obj: Record<string, unknown>; key: string; indent: number; isArray: boolean };
+  type StackItem = { obj: Record<string, unknown> | unknown[]; key: string; indent: number; isArray: boolean };
   const stack: StackItem[] = [];
-  let root: Record<string, unknown> = config;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith("#")) continue;
 
-    const indent = line.search(/\S|$/);
+    const indent = line.search(/\S/);
     const isListItem = trimmed.startsWith("-");
 
     // Pop stack to correct level
+    // Pop when moving UP or staying at same level (unless we're a nested object property)
     while (stack.length > 0 && stack[stack.length - 1].indent >= indent) {
+      // Special case: if we're a list item at the same indent as a previous list item, pop it
+      // This handles multiple list items at the same level
+      if (stack[stack.length - 1].indent === indent && isListItem) {
+        stack.pop();
+        break;
+      }
+      // Special case: if we're at same indent and current context is an object,
+      // we might be adding a property to it, so don't pop
+      if (stack[stack.length - 1].indent === indent && !stack[stack.length - 1].isArray) {
+        break;
+      }
       stack.pop();
     }
 
@@ -85,48 +89,62 @@ function parseYaml(content: string): SyncConfig {
       if (!itemContent.includes(":")) {
         // Simple array value: "- item"
         if (Array.isArray(currentContext.obj)) {
-          currentContext.obj.push(itemContent);
+          (currentContext.obj as string[]).push(itemContent);
         }
       } else {
         // Object in array: "- key: value"
         const [key, ...valueParts] = itemContent.split(":");
         const value = valueParts.join(":").trim();
-        const newObj = key ? { [key.trim()]: value } : {};
+        const newObj: Record<string, unknown> = {};
+        if (key) {
+          newObj[key.trim()] = value;
+        }
 
         if (Array.isArray(currentContext.obj)) {
-          currentContext.obj.push(newObj);
+          (currentContext.obj as unknown[]).push(newObj);
           // Push to stack so next lines can add to this object
           stack.push({ obj: newObj, key: key?.trim() || "", indent, isArray: false });
         }
       }
-      continue;
-    }
+    } else {
+      // Key-value pair
+      const colonIndex = trimmed.indexOf(":");
+      if (colonIndex > 0) {
+        const key = trimmed.substring(0, colonIndex).trim();
+        const value = trimmed.substring(colonIndex + 1).trim();
 
-    // Key-value pair
-    const colonIndex = trimmed.indexOf(":");
-    if (colonIndex > 0) {
-      const key = trimmed.substring(0, colonIndex).trim();
-      const value = trimmed.substring(colonIndex + 1).trim();
-
-      // Look ahead to see if next line is array start or indented content
-      const nextLine = i + 1 < lines.length ? lines[i + 1].trim() : "";
-      const isParentOfArray = nextLine.startsWith("-");
-      const hasIndentedContent = i + 1 < lines.length && lines[i + 1].search(/\S|$/) > indent;
-
-      if (value === "" || isParentOfArray || hasIndentedContent) {
-        // Object or array follows
-        if (isParentOfArray) {
-          const newArray: unknown[] = [];
-          currentContext.obj[key] = newArray;
-          stack.push({ obj: newArray as unknown as Record<string, unknown>, key, indent, isArray: true });
-        } else {
-          const newObj: Record<string, unknown> = {};
-          currentContext.obj[key] = newObj;
-          stack.push({ obj: newObj, key, indent, isArray: false });
+        // Look ahead to see if next line is array start or indented content
+        // Skip comments and empty lines
+        let nextNonEmptyLine = "";
+        for (let j = i + 1; j < lines.length; j++) {
+          const lookAhead = lines[j];
+          if (lookAhead.trim() && !lookAhead.trim().startsWith("#")) {
+            nextNonEmptyLine = lookAhead;
+            break;
+          }
         }
-      } else {
-        // Simple value
-        currentContext.obj[key] = value;
+        const isParentOfArray = nextNonEmptyLine.trim().startsWith("-");
+        // Check if next non-empty line has greater indent than current line
+        let hasIndentedContent = false;
+        if (nextNonEmptyLine) {
+          hasIndentedContent = nextNonEmptyLine.search(/\S/) > indent;
+        }
+
+        if (value === "" || isParentOfArray || hasIndentedContent) {
+          // Object or array follows - create container
+          if (isParentOfArray) {
+            const newArray: unknown[] = [];
+            (currentContext.obj as Record<string, unknown>)[key] = newArray;
+            stack.push({ obj: newArray, key, indent, isArray: true });
+          } else {
+            const newObj: Record<string, unknown> = {};
+            (currentContext.obj as Record<string, unknown>)[key] = newObj;
+            stack.push({ obj: newObj, key, indent, isArray: false });
+          }
+        } else {
+          // Simple value
+          (currentContext.obj as Record<string, unknown>)[key] = value;
+        }
       }
     }
   }
