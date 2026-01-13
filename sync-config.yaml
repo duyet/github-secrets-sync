@@ -1,11 +1,5 @@
 # GitHub Secrets & Vars Sync Configuration
 #
-# Auto-generated from local project analysis
-#
-# Scanned projects:
-# - ~/project/monorepo (duyet/monorepo)
-# - ~/project/clickhouse-monitor (duyet/clickhouse-monitoring)
-#
 # Definitions:
 # - secrets: Sensitive values (API keys, tokens, passwords) - encrypted, hidden
 # - vars: Non-sensitive values (URLs, config, IDs) - plain text, visible in UI
@@ -18,7 +12,7 @@
 # =============================================================================
 secrets:
   - DUYETBOT_GITHUB_TOKEN
-  - OPENROUTER_API_KEY  # For Claude/AI API access
+  - OPENROUTER_API_KEY
 
 # =============================================================================
 # Global Vars (non-sensitive, visible in UI)
