@@ -14,17 +14,36 @@ In your repo settings → Secrets and variables → Actions:
 Edit `sync-config.yaml`:
 ```yaml
 # source_repository: auto-detected (omit for auto-detection)
+
+# Global secrets list (default for all targets)
 secrets:
   - API_TOKEN
   - DATABASE_URL
+  - APP_SECRET_KEY
+
+# Targets can override with their own subset
 targets:
+  # Gets all secrets from global list
   - repository: my-org/target-repo-1
+
+  # Only gets specific secrets (per-target override)
   - repository: my-org/target-repo-2
+    secrets:
+      - API_TOKEN
+      - DATABASE_URL
+
+  # Monitoring gets only what it needs
+  - repository: my-org/monitoring
+    secrets:
+      - API_TOKEN
+      - MONITORING_KEY
 ```
 
 **Note**: `source_repository` is optional. It auto-detects from:
 - GitHub Actions: `GITHUB_REPOSITORY` environment variable
 - Local: git remote URL
+
+**Per-target secrets**: Each target can specify its own `secrets:` list to override the global list. If omitted, the target gets all global secrets.
 
 ### 4. Run
 Click the 🚀 badge in the README, or it runs daily at midnight UTC
@@ -103,7 +122,7 @@ Then add these repository secrets:
 # Source repository (optional - auto-detected if omitted)
 # source_repository: my-org/source-repo
 
-# Secret names to sync (values come from GitHub Actions secrets)
+# Global secret names to sync (default for all targets)
 secrets:
   - API_TOKEN
   - DATABASE_URL
@@ -111,8 +130,14 @@ secrets:
 
 # Target repositories (must be repos your PAT can write to)
 targets:
+  # Gets all global secrets
   - repository: my-org/target-repo-1
+
+  # Per-target override: only gets specific secrets
   - repository: my-org/target-repo-2
+    secrets:
+      - API_TOKEN
+      - DATABASE_URL
 ```
 
 ### Important Notes
@@ -121,6 +146,9 @@ targets:
   - Auto-detects from `GITHUB_REPOSITORY` in GitHub Actions
   - Auto-detects from git remote URL when running locally
   - Explicitly set it if you want to override auto-detection
-- All secrets in the list are synced to **all** target repositories
+- **Per-target secrets**: Each target can optionally specify its own `secrets:` list
+  - If specified: only those secrets are synced to that target
+  - If omitted: all global secrets are synced to that target
+- This allows different repos to receive different subsets of secrets
 - Secret names must match exactly (case-sensitive)
 - Target repos must exist and your PAT must have write access

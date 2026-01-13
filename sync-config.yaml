@@ -9,15 +9,27 @@
 # Source repository (auto-detected from git or GitHub Actions if omitted)
 # source_repository: my-org/source-repo
 
-# List of secret names to sync
-# Each secret name should be available as an environment variable
+# List of secret names to sync (default for all targets)
+# Each target can override this with its own subset
 secrets:
   - API_TOKEN
   - DATABASE_URL
   - APP_SECRET_KEY
 
 # Target repositories to sync secrets to
-# All listed secrets will be synced to all target repositories
+# Each target can specify its own subset of secrets, or omit to get all secrets
 targets:
+  # This target gets all secrets from the global list
   - repository: my-org/target-repo-1
+
+  # This target only gets specific secrets (per-target override)
   - repository: my-org/target-repo-2
+    secrets:
+      - API_TOKEN
+      - DATABASE_URL
+
+  # Another example with custom subset
+  - repository: my-org/monitoring
+    secrets:
+      - API_TOKEN
+      - MONITORING_KEY

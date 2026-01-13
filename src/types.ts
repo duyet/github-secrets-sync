@@ -4,6 +4,8 @@
 export interface SyncTarget {
   /** Repository in format "owner/repo" */
   repository: string;
+  /** Optional: Override which secrets to sync to this target (defaults to all) */
+  secrets?: string[];
 }
 
 /**

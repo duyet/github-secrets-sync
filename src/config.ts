@@ -54,14 +54,15 @@ export function loadConfig(configPath: string = "sync-config.yaml"): SyncConfig 
  *     - item1
  *     - item2
  *     - key: value  (object in array)
+ *     - key: value  (object in array with nested fields)
  */
 function parseYaml(content: string): SyncConfig {
   const lines = content.split("\n");
   const config: Record<string, unknown> = {};
 
-  let currentArray: unknown[] | null = null;
-  let currentKey = "";
-  let currentObj: Record<string, unknown> | null = null;
+  type StackItem = { obj: Record<string, unknown>; key: string; indent: number; isArray: boolean };
+  const stack: StackItem[] = [];
+  let root: Record<string, unknown> = config;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -69,59 +70,63 @@ function parseYaml(content: string): SyncConfig {
     if (!trimmed || trimmed.startsWith("#")) continue;
 
     const indent = line.search(/\S|$/);
+    const isListItem = trimmed.startsWith("-");
 
-    // Check for array item
-    if (trimmed.startsWith("-")) {
+    // Pop stack to correct level
+    while (stack.length > 0 && stack[stack.length - 1].indent >= indent) {
+      stack.pop();
+    }
+
+    const currentContext = stack.length > 0 ? stack[stack.length - 1] : { obj: config, indent: -1, isArray: false };
+
+    if (isListItem) {
       const itemContent = trimmed.substring(1).trim();
 
       if (!itemContent.includes(":")) {
-        // Simple array value
-        if (currentArray) {
-          currentArray.push(itemContent);
+        // Simple array value: "- item"
+        if (Array.isArray(currentContext.obj)) {
+          currentContext.obj.push(itemContent);
         }
       } else {
-        // Object in array (e.g., "- repository: owner/repo")
+        // Object in array: "- key: value"
         const [key, ...valueParts] = itemContent.split(":");
         const value = valueParts.join(":").trim();
+        const newObj = key ? { [key.trim()]: value } : {};
 
-        if (!currentObj) {
-          currentObj = {};
-          if (currentArray) {
-            currentArray.push(currentObj);
-          }
+        if (Array.isArray(currentContext.obj)) {
+          currentContext.obj.push(newObj);
+          // Push to stack so next lines can add to this object
+          stack.push({ obj: newObj, key: key?.trim() || "", indent, isArray: false });
         }
-
-        currentObj[key.trim()] = value;
       }
       continue;
     }
 
-    // Check for key-value pair
+    // Key-value pair
     const colonIndex = trimmed.indexOf(":");
     if (colonIndex > 0) {
       const key = trimmed.substring(0, colonIndex).trim();
       const value = trimmed.substring(colonIndex + 1).trim();
 
-      // Look ahead to see if next line is array start
+      // Look ahead to see if next line is array start or indented content
       const nextLine = i + 1 < lines.length ? lines[i + 1].trim() : "";
       const isParentOfArray = nextLine.startsWith("-");
+      const hasIndentedContent = i + 1 < lines.length && lines[i + 1].search(/\S|$/) > indent;
 
-      if (value === "" || isParentOfArray) {
-        // Empty value means object or array follows
+      if (value === "" || isParentOfArray || hasIndentedContent) {
+        // Object or array follows
         if (isParentOfArray) {
-          currentArray = [];
-          currentObj = null;
-          config[key] = currentArray;
+          const newArray: unknown[] = [];
+          currentContext.obj[key] = newArray;
+          stack.push({ obj: newArray as unknown as Record<string, unknown>, key, indent, isArray: true });
         } else {
-          currentObj = {};
-          config[key] = currentObj;
+          const newObj: Record<string, unknown> = {};
+          currentContext.obj[key] = newObj;
+          stack.push({ obj: newObj, key, indent, isArray: false });
         }
-        currentKey = key;
       } else {
         // Simple value
-        config[key] = value;
-        currentArray = null;
-        currentObj = null;
+        currentContext.obj[key] = value;
       }
     }
   }

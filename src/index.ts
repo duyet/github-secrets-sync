@@ -93,15 +93,19 @@ async function runSync(options: CliOptions): Promise<SyncResult> {
   const timestamp = new Date().toISOString();
 
   // Sync each secret to each target
-  for (const secretName of config.secrets) {
-    log(`Processing secret: ${secretName}`, options.verbose);
+  // For each target, use its own secrets list if specified, otherwise use global list
+  for (const target of config.targets) {
+    const secretsForTarget = target.secrets || config.secrets;
+    log(`Target: ${target.repository}`, options.verbose);
+    log(`  Secrets: ${secretsForTarget.join(", ")}`, options.verbose);
 
-    // Get secret value from environment
-    const secretValue = getSecretValue(secretName);
-    log(`Retrieved secret value for: ${secretName}`, options.verbose);
+    for (const secretName of secretsForTarget) {
+      log(`  Processing secret: ${secretName}`, options.verbose);
 
-    for (const target of config.targets) {
-      log(`  Syncing to: ${target.repository}`, options.verbose);
+      // Get secret value from environment
+      const secretValue = getSecretValue(secretName);
+      log(`    Retrieved secret value`, options.verbose);
+
       const result = syncSecret(secretName, target.repository, secretValue, options.dryRun);
       results.push(result);
 
