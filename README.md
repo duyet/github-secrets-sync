@@ -7,18 +7,45 @@ Sync secrets across GitHub repositories safely. Whitelist-based, scheduled or ma
 ## How It Works
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│  1. Trigger: Schedule (daily) or Manual (click 🚀 badge)        │
-│                          ↓                                      │
-│  2. Load sync-config.yaml (whitelist of secrets + targets)      │
-│                          ↓                                      │
-│  3. Read secret values from GitHub Actions env vars             │
-│                          ↓                                      │
-│  4. For each secret → For each target → gh secret set          │
-│                          ↓                                      │
-│  5. Update README with sync status (names only, no values)     │
-└─────────────────────────────────────────────────────────────────┘
+                    ┌─────────────────┐
+                    │   TRIGGER       │
+                    │ • Schedule      │  Daily at midnight UTC
+                    │ • Manual        │  Click 🚀 badge in README
+                    └────────┬────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │   CONFIG        │
+                    │ sync-config.yaml│  Whitelist of secrets + targets
+                    └────────┬────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │   SECRETS       │
+                    │ GitHub Actions  │  Encrypted env vars (never in git)
+                    │     Secrets     │  • GH_SYNC_PAT
+                    └────────┬────────┘  • API_TOKEN
+                             │             • DATABASE_URL
+                             ▼
+              ┌────────────────────────┐
+              │     SYNC PROCESS       │
+              │                        │
+              │  For each secret:      │
+              │    For each target:    │
+              │      gh secret set     │
+              └────────┬───────────────┘
+                       │
+                       ▼
+                    ┌─────────────────┐
+                    │   STATUS        │
+                    │ Update README   │  Names only (no values)
+                    └─────────────────┘
 ```
+
+**Key Points:**
+- 🔒 **Values never logged** - only secret names appear in status
+- ✅ **Whitelist-only** - only secrets you explicitly list get synced
+- 📅 **Auto-runs daily** - or trigger manually anytime
 
 ## Documentation
 
