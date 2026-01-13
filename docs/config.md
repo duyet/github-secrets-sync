@@ -12,8 +12,9 @@ The `sync-config.yaml` file defines which secrets and vars to sync, and which ta
 # Global Secrets (encrypted, hidden)
 # =============================================================================
 secrets:
-  - DUYETBOT_GITHUB_TOKEN
-  - OPENROUTER_API_KEY
+  # Rename syntax: SOURCE:TARGET
+  - DU_YETBOT_TOKEN:DUYETBOT_GITHUB_TOKEN  # Read from DU_YETBOT_TOKEN, write as DUYETBOT_GITHUB_TOKEN
+  - OPENROUTER_API_KEY                       # Regular (no rename)
 
 # =============================================================================
 # Global Vars (non-sensitive, visible in UI)
@@ -84,6 +85,34 @@ vars:
   - API_URL
   - AUTH0_CLIENT_ID
 ```
+
+### Rename Syntax
+
+**Format:** `SOURCE:TARGET`
+
+Reads from `SOURCE` environment variable, but writes to the target repository as `TARGET`.
+
+**Use case:** Different naming conventions between local environment and target repositories.
+
+```yaml
+secrets:
+  # Read from DU_YETBOT_TOKEN, write as DUYETBOT_GITHUB_TOKEN
+  - DU_YETBOT_TOKEN:DUYETBOT_GITHUB_TOKEN
+
+  # Regular (no rename)
+  - OPENROUTER_API_KEY
+
+vars:
+  # Rename example
+  - MY_APP_URL:API_URL
+  - NODE_ENV  # No rename
+```
+
+**How it works:**
+1. **Read value** from `DU_YETBOT_TOKEN` environment variable
+2. **Write value** to target repository as `DUYETBOT_GITHUB_TOKEN`
+3. The secret in the target repo will be named `DUYETBOT_GITHUB_TOKEN`
+4. Useful when your local env uses different names than your target repos
 
 ### `targets` (required)
 

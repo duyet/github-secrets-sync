@@ -10,6 +10,13 @@
 # Definitions:
 # - secrets: Sensitive values (API keys, tokens, passwords) - encrypted, hidden
 # - vars: Non-sensitive values (URLs, config, IDs) - plain text, visible in UI
+#
+# Rename Syntax:
+# - Format: "SOURCE:TARGET" means read from SOURCE env var, write as TARGET name
+# - Example: "DUYETBOT_TOKEN:DUYETBOT_GITHUB_TOKEN"
+#   - Reads from: DUYETBOT_TOKEN environment variable
+#   - Writes to: DUYETBOT_GITHUB_TOKEN in the target repository
+# - Use case: Different naming conventions between local and target repos
 
 # Source repository (auto-detected)
 # source_repository: duyet/github-secrets-sync
@@ -18,7 +25,8 @@
 # Global Secrets (sensitive, encrypted)
 # =============================================================================
 secrets:
-  - DUYETBOT_GITHUB_TOKEN
+  # Rename example: read from DUYETBOT_TOKEN, write as DUYETBOT_GITHUB_TOKEN
+  - DUYETBOT_TOKEN:DUYETBOT_GITHUB_TOKEN
   - OPENROUTER_API_KEY
 
 # =============================================================================
@@ -128,6 +136,7 @@ targets:
       - GITHUB_TOKEN
       - GITHUB_WEBHOOK_SECRET
       - GITHUB_CLIENT_SECRET
+      - GITHUB_CLIENT_ID
 
       # LLM Providers (already global, but listed for clarity)
       # - OPENROUTER_API_KEY
@@ -145,9 +154,6 @@ targets:
     vars:
       # AI Gateway (Config)
       - AI_GATEWAY_NAME
-
-      # GitHub (Public Client ID)
-      - GITHUB_CLIENT_ID
 
       # LLM Providers (Model selection)
       - MODEL

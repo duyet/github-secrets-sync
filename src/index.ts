@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { CliOptions, SyncResult, SecretSyncResult } from "./types.js";
+import { parseSecret } from "./types.js";
 import { loadConfig } from "./config.js";
 import { configureAuth, syncSecret, getSecretValue, syncVariable, getVarValue } from "./github.js";
 
@@ -105,17 +106,20 @@ async function runSync(options: CliOptions): Promise<SyncResult> {
 
     // Sync secrets
     for (const secretName of secretsForTarget) {
-      log(`  Processing secret: ${secretName}`, options.verbose);
+      const parsed = parseSecret(secretName);
+      const displayName = parsed.isRenamed ? `${parsed.source} → ${parsed.target}` : secretName;
+      log(`  Processing secret: ${displayName}`, options.verbose);
 
-      // Get secret value from environment variable
-      const secretValue = getSecretValue(secretName);
-      log(`    Retrieved secret value`, options.verbose);
+      // Get secret value from environment variable (use source name)
+      const secretValue = getSecretValue(parsed.source);
+      log(`    Retrieved secret value from ${parsed.source}`, options.verbose);
 
-      const result = syncSecret(secretName, target.repository, secretValue, options.dryRun);
+      // Sync with target name (what gets written to the repo)
+      const result = syncSecret(parsed.target, target.repository, secretValue, options.dryRun);
       results.push(result);
 
       if (result.success) {
-        log(`    ✅ Success`, options.verbose);
+        log(`    ✅ Success (written as ${parsed.target})`, options.verbose);
       } else {
         log(`    ❌ Failed: ${result.error}`, options.verbose);
       }
@@ -123,17 +127,20 @@ async function runSync(options: CliOptions): Promise<SyncResult> {
 
     // Sync vars
     for (const varName of varsForTarget) {
-      log(`  Processing var: ${varName}`, options.verbose);
+      const parsed = parseSecret(varName);
+      const displayName = parsed.isRenamed ? `${parsed.source} → ${parsed.target}` : varName;
+      log(`  Processing var: ${displayName}`, options.verbose);
 
-      // Get var value from environment variable
-      const varValue = getVarValue(varName);
-      log(`    Retrieved var value`, options.verbose);
+      // Get var value from environment variable (use source name)
+      const varValue = getVarValue(parsed.source);
+      log(`    Retrieved var value from ${parsed.source}`, options.verbose);
 
-      const result = syncVariable(varName, target.repository, varValue, options.dryRun);
+      // Sync with target name (what gets written to the repo)
+      const result = syncVariable(parsed.target, target.repository, varValue, options.dryRun);
       results.push(result);
 
       if (result.success) {
-        log(`    ✅ Success`, options.verbose);
+        log(`    ✅ Success (written as ${parsed.target})`, options.verbose);
       } else {
         log(`    ❌ Failed: ${result.error}`, options.verbose);
       }

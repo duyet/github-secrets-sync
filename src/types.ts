@@ -77,3 +77,37 @@ export interface SyncStatusEntry {
   lastSync: string;
   status: string;
 }
+
+/**
+ * Parsed secret/var with rename support
+ * Format: "SOURCE:TARGET" means read from SOURCE env var, write as TARGET name
+ */
+export interface ParsedSecret {
+  /** Source name (read from this env var) */
+  source: string;
+  /** Target name (write to the repo with this name) */
+  target: string;
+  /** Whether this is a rename operation */
+  isRenamed: boolean;
+}
+
+/**
+ * Parse a secret/var string that may contain rename syntax
+ * @param value The secret/var string, possibly in format "SOURCE:TARGET"
+ * @returns Parsed secret with source and target names
+ */
+export function parseSecret(value: string): ParsedSecret {
+  const colonIndex = value.indexOf(":");
+  if (colonIndex > 0) {
+    return {
+      source: value.substring(0, colonIndex).trim(),
+      target: value.substring(colonIndex + 1).trim(),
+      isRenamed: true,
+    };
+  }
+  return {
+    source: value,
+    target: value,
+    isRenamed: false,
+  };
+}
