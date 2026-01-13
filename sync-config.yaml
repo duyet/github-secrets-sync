@@ -18,6 +18,7 @@
 # =============================================================================
 secrets:
   - DUYETBOT_GITHUB_TOKEN
+  - OPENROUTER_API_KEY  # For Claude/AI API access
 
 # =============================================================================
 # Global Vars (non-sensitive, visible in UI)
