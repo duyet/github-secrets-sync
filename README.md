@@ -2,7 +2,7 @@
 
 [![Run Sync](https://img.shields.io/badge/🚀-Run_Sync-blue?logo=github)](https://github.com/duyet/github-secrets-sync/actions/workflows/sync-secrets.yml)
 
-Sync secrets (encrypted) and vars (plain text) across GitHub repositories. Whitelist-based, scheduled or manual.
+Sync secrets (🔒 encrypted) and vars (📝 plain text) across GitHub repositories. Whitelist-based, scheduled or manual.
 
 ## How It Works
 
@@ -10,7 +10,7 @@ Sync secrets (encrypted) and vars (plain text) across GitHub repositories. White
                     ┌─────────────────┐
                     │   TRIGGER       │
                     │ • Schedule      │  Daily at midnight UTC
-                    │ • Manual        │  Click 🚀 badge in README
+                    │ • Manual        │  Click 🚀 badge above
                     └────────┬────────┘
                              │
                              ▼
@@ -48,105 +48,33 @@ Sync secrets (encrypted) and vars (plain text) across GitHub repositories. White
 ```
 
 **Key Points:**
-- 🔒 **Secrets encrypted** - sensitive values (tokens, passwords) never visible in UI
-- 📝 **Vars plain text** - non-sensitive config (URLs, IDs) visible for debugging
+- 🔒 **Secrets encrypted** - sensitive values never visible in UI
+- 📝 **Vars plain text** - non-sensitive config visible for debugging
 - ✅ **Whitelist-only** - only items you explicitly list get synced
 - 🤖 **Auto-detects source** - from GITHUB_REPOSITORY or git remote
 - 📅 **Auto-runs daily** - or trigger manually anytime
 
-## Three-Tier Workflow
-
-This tool uses a **central hub pattern**:
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         WORKFLOW TIERS                              │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  1. LOCAL → SOURCE                                                 │
-│     bun run push-env                                               │
-│     Reads .env.local → Pushes to github-secrets-sync repo          │
-│     (🔒 secrets + 📝 vars)                                         │
-│                                                                     │
-│  2. LOCAL SYNC (Optional)                                          │
-│     bun run sync                                                   │
-│     Syncs from local .env.local → Target repositories              │
-│     (For testing before committing)                                │
-│                                                                     │
-│  3. WORKFLOW SYNC (Automation)                                    │
-│     GitHub Actions / Manual trigger                                │
-│     Syncs from github-secrets-sync → Target repositories           │
-│     (🚀 Click badge in README to trigger)                          │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### Usage Examples
+## Quick Start
 
 ```bash
-# Tier 1: Push local .env to this repo (source of truth)
+# 1. Push local .env to this repo
 bun run push-env
 
-# Tier 2: Test sync locally (optional)
-bun run sync:dry     # Dry run
-bun run sync         # Live sync
+# 2. Test sync locally (optional)
+bun run sync:dry
 
-# Tier 3: GitHub Actions (automatic or manual)
-# Automatic: Runs daily at midnight UTC
-# Manual: Click 🚀 badge in README
+# 3. Trigger GitHub Actions (auto or manual via 🚀 badge)
 ```
 
 ## Documentation
 
-| Topic | Link |
-|-------|------|
-| **Setup Guide** | [docs/setup.md](docs/setup.md) - PAT creation, configuration |
-| **Security Model** | [docs/security.md](docs/security.md) - How secrets stay safe |
-| **Troubleshooting** | [docs/troubleshooting.md](docs/troubleshooting.md) - Common issues |
-
-## Configuration Reference
-
-**`sync-config.yaml`** structure:
-
-```yaml
-# Source repository (auto-detected)
-# source_repository: duyet/github-secrets-sync
-
-# Sensitive values (encrypted, hidden)
-secrets:
-  - API_TOKEN
-  - DATABASE_PASSWORD
-
-# Non-sensitive values (plain text, visible)
-vars:
-  - NODE_ENV
-  - API_URL
-
-# Target repositories
-targets:
-  - repository: duyet/my-project
-    secrets:          # Optional: override secrets for this target
-      - API_TOKEN
-    vars:             # Optional: override vars for this target
-      - NODE_ENV
-```
-
-## Quick Reference
-
-```bash
-# Push .env.local to this repo
-bun run push-env
-
-# Local sync (from .env.local to targets)
-bun run sync
-bun run sync:dry        # Dry run
-bun run sync:verbose    # With debug output
-
-# Direct index.ts usage
-bun run start            # Sync using current env vars
-bun run dry-run          # Preview without changes
-bun run dry-run-verbose  # Preview with details
-```
+| Topic | Description |
+|-------|-------------|
+| **[Setup Guide](docs/setup.md)** | PAT creation, configuration, getting started |
+| **[Workflow](docs/workflow.md)** | Three-tier workflow (push → sync → automate) |
+| **[Security](docs/security.md)** | How secrets stay safe, best practices |
+| **[Troubleshooting](docs/troubleshooting.md)** | Common issues and solutions |
+| **[Configuration](docs/config.md)** | sync-config.yaml reference |
 
 ## Sync Status
 
