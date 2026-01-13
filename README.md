@@ -16,10 +16,33 @@ A secure, automated GitHub secret synchronization solution using Bun/TypeScript.
 
 **⚠️ Important**: GitHub's default `GITHUB_TOKEN` cannot access secrets in other repositories. You must create a Personal Access Token.
 
-1. Go to https://github.com/settings/tokens/new
-2. Select scopes:
-   - ✅ `repo` (Full control of private repositories)
-3. Generate and copy the token
+**Step-by-step:**
+
+1. Navigate to **Settings** (top right menu) → **Developer settings** → **Personal access tokens** → **Tokens (classic)**
+   - Or go directly to: https://github.com/settings/tokens/new
+
+2. Click **Generate new token** → **Generate new token (classic)**
+
+3. Configure the token:
+   - **Name**: Enter a descriptive name (e.g., "GitHub Secrets Sync PAT")
+   - **Expiration**: Choose an expiration period (90 days or 1 year recommended)
+   - **Scopes**: Check only the `repo` scope
+     - ✅ `repo` - Full control of private repositories
+     - This gives access to:
+       - `repo:status` - Commit status
+       - `repo_deployment` - Deployment status
+       - `public_repo` - Public repositories
+       - `repo:invite` - Repository invitations
+       - `security_events` - Security events
+
+4. Click **Generate token** at the bottom
+
+5. **⚠️ IMPORTANT**: Copy the token immediately - you won't be able to see it again!
+
+**Security notes:**
+- Never share PATs in chats, emails, or commit them to repositories
+- Store the token securely in GitHub repository secrets (see next step)
+- If a token is accidentally exposed, revoke it immediately at https://github.com/settings/tokens
 
 ### 2. Configure Repository Secrets
 
